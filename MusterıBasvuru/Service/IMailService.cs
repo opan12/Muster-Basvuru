@@ -1,0 +1,8 @@
+﻿namespace MusterıBasvuru.Service
+{
+    public interface IMailService
+    {
+        Task onaymail(string email);
+        Task redmail(string email, string mesaj);
+    }
+}
