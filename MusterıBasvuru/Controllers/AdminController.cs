@@ -65,8 +65,7 @@ namespace MusterıBasvuru.Controllers
             };
             _context.MusteriBasvuru.Add(musteribasvuru);
 
-            ////var logger = new Logger();
-            ////logger.LogBasvuruAlindi();
+
             await _context.SaveChangesAsync();
             await _logservice.AddLogAsync();
 
