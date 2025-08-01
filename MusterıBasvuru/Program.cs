@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MusterıBasvuru;
 using MusterıBasvuru;
 using MusterıBasvuru.DbContext;
 using MusterıBasvuru.Service;
@@ -13,11 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 // === CORS ===
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5174") // Frontend URL’in (React)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); // Cookie ve session için önemli
     });
 });
 
@@ -61,43 +60,34 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddDbContext<UygulamaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//builder.Services.AddDbContext<IdentityDbContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityDb")));
+// === Authentication - JWT ===
 
-// === Identity ===
-
-// === JWT Authentication ===
-builder.Services.AddAuthentication(options =>
+// === Session için gerekli servisler ===
+builder.Services.AddDistributedMemoryCache(); // Session için gerekli
+builder.Services.AddSession(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? string.Empty))
-    };
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.None;  // Önemli: cross-site cookie için None
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // HTTPS zorunluysa
 });
+
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddTransient<LogService>(); 
-builder.Services.AddSingleton<IMailService,MailService>();
+//builder.Services.AddHostedService<FakeDataBackgroundService>();
+
+
+builder.Services.AddTransient<LogService>();
+builder.Services.AddSingleton<IMailService, MailService>();
 
 builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
-
-// === Middleware ===
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
@@ -109,10 +99,17 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     }
 }
 
-app.UseCors("AllowAll");
 app.UseHttpsRedirection();
-app.UseAuthentication(); // BU ÖNEMLİ
+
+app.UseCors();  // default policy uygulanır
+
+app.UseRouting();
+
+app.UseSession();  // Session middleware buraya
+
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

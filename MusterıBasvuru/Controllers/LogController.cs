@@ -24,6 +24,9 @@ namespace MusterıBasvuru.Controllers
             {
                 Kayit_Zaman = t.Kayit_Zaman,
                 Kayit_Yapan = t.Kayit_Yapan,
+                Açıklama = t.Açıklama,
+                logId = t.logId,
+                MusteriBasvuru_UID = t.MusteriBasvuru_UID
             });
 
             return Ok(Log);

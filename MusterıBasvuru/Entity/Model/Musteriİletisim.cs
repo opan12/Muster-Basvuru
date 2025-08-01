@@ -8,10 +8,12 @@ namespace MusterıBasvuru.Entity.Model
     public class Musteriİletisim
     {
         [Key]
-        public int IletısımId { get; set; }
+        public Guid IletısımId { get; set; }
          public Guid MusteriBasvuru_UID { get; set; }
         public Guid Basvuru_UID { get; set; }
+        public bool GönderilmeSeklı { get; set; }
         public string Acıklama { get; set; }
+
 
     }
 }

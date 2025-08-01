@@ -10,6 +10,7 @@ namespace MusterıBasvuru.Entity
         [Key]
         public Guid logId { get; set; }
         public Guid MusteriBasvuru_UID { get; set; }
+        public Guid Basvuru_UID { get; set; }
 
         public string Açıklama { get; set; }
 

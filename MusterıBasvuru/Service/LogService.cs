@@ -4,7 +4,7 @@ using MusterıBasvuru.Entity.Model;
 
 namespace MusterıBasvuru.Service
 {
-    public class LogService: ILogService
+    public class LogService
     {
         private readonly UygulamaDbContext _context;
 
@@ -13,15 +13,18 @@ namespace MusterıBasvuru.Service
             _context = context;
         }
 
-        public async Task AddLogAsync()
+        public async Task AddLogAsync(Guid userıd, Guid basvuruıd)
         {
-            var  kayityapan= Environment.UserName;
+            var kayityapan = Environment.UserName;
             var log = new Log
             {
+                Basvuru_UID = basvuruıd,
+                Kayit_Zaman = DateTime.Now,
                 Kayit_Yapan = kayityapan,
-                Kayit_Zaman = DateTime.Now
+                Açıklama = string.Empty,
+                MusteriBasvuru_UID = userıd,
             };
-
+            _context.Add(log);
             await _context.SaveChangesAsync();
         }
     }
